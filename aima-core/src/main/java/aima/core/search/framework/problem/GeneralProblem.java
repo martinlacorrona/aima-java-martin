@@ -5,6 +5,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import aima.core.environment.eightpuzzle.EightPuzzleFunctions;
+
 /**
  * Configurable problem which uses objects to explicitly represent the required
  * functions.
@@ -69,7 +71,8 @@ public class GeneralProblem<S, A> implements Problem<S, A> {
      */
     public GeneralProblem(S initialState, Function<S, List<A>> actionsFn,  BiFunction<S, A, S> resultFn,
                           Predicate<S> goalTest) {
-        this(initialState, actionsFn, resultFn, goalTest, (s, a, sPrimed) -> 1.0);
+        //this(initialState, actionsFn, resultFn, goalTest, (s, a, sPrimed) -> 1.0);
+        this(initialState, actionsFn, resultFn, goalTest, EightPuzzleFunctions::stepCostFunction);
     }
 
     public S getInitialState() {

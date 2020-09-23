@@ -6,7 +6,7 @@ import java.util.Queue;
 import aima.core.search.framework.Node;
 import aima.core.search.framework.NodeFactory;
 import aima.core.search.framework.problem.Problem;
-import aima.core.util.Tasks;
+import aima.core.util.Tasks;import jdk.nashorn.internal.ir.CallNode.EvalArgs;
 
 /**
  * Artificial Intelligence A Modern Approach (3rd Edition): Figure 3.7, page 77.
@@ -67,6 +67,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 		clearMetrics();
 		// initialize the frontier using the initial state of the problem
 		Node<S, A> root = nodeFactory.createNode(problem.getInitialState());
+		//TODO: tiempo inicial
 		addToFrontier(root);
 		if (earlyGoalTest && problem.testSolution(root))
 			return asOptional(root);
@@ -74,9 +75,15 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 		while (!isFrontierEmpty() && !Tasks.currIsCancelled()) {
 			// choose a leaf node and remove it from the frontier
 			Node<S, A> node = removeFromFrontier();
+			
+			//monitorizamos el valor de f(node)
+			System.out.println("f-value: " + evalFn.applyAsDouble(node));
+			
 			// if the node contains a goal state then return the corresponding solution
-			if (!earlyGoalTest && problem.testSolution(node))
+			if (!earlyGoalTest && problem.testSolution(node)) {
+				//TODO: tiempo final
 				return asOptional(node);
+			}
 
 			// expand the chosen node and add the successor nodes to the frontier
 			for (Node<S, A> successor : nodeFactory.getSuccessors(node, problem)) {

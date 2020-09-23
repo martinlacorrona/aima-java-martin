@@ -1,10 +1,12 @@
 package aima.core.search.framework.qsearch;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
+import aima.core.search.framework.Metrics;
 import aima.core.search.framework.Node;
 import aima.core.search.framework.NodeFactory;
 import aima.core.search.framework.problem.Problem;
@@ -47,7 +49,8 @@ import aima.core.search.framework.problem.Problem;
  */
 public class GraphSearch<S, A> extends TreeSearch<S, A> {
 
-	private Set<S> explored = new HashSet<>();
+	//private Set<S> explored = new HashSet<>();
+	private HashMap<S, Node<S, A>> explored = new HashMap<>();
 
 	public GraphSearch() {
 		this(new NodeFactory<>());
@@ -68,15 +71,40 @@ public class GraphSearch<S, A> extends TreeSearch<S, A> {
 		return super.findNode(problem, frontier);
 	}
 
+	//!!!!!!!!          ORIGINAL
+	/**
+	 * Inserts the node at the tail of the frontier if the corresponding state
+	 * was not yet explored.
+	 */
+//	@Override
+//	protected void addToFrontier(Node<S, A> node) {
+//		if (!explored.contains(node.getState())) {
+//			frontier.add(node);
+//			updateMetrics(frontier.size());
+//		}
+//	}
+	
+	// ***********************
+	// Rectificar reinsertando en abierta
+	// ***********************
 	/**
 	 * Inserts the node at the tail of the frontier if the corresponding state
 	 * was not yet explored.
 	 */
 	@Override
 	protected void addToFrontier(Node<S, A> node) {
-		if (!explored.contains(node.getState())) {
+		if (!explored.containsKey(node.getState())) {
 			frontier.add(node);
 			updateMetrics(frontier.size());
+		} else {
+			//Comprobamos si el camino del inicial al nodo es mejor que el que tniamos
+			//Si es asi, nos quedamos con el mejor y reinsertamos el nodo en frontier
+			Node<S, A> old = explored.get(node.getState());
+			if(node.getPathCost() < old.getPathCost()) {//Mejor caminio
+				explored.remove(node.getState());
+				frontier.add(node);
+				metrics.incrementInt(METRIC_NODES_EXPANDED_REINSERTED_IN_FRONTIER);
+			}
 		}
 	}
 
@@ -92,7 +120,7 @@ public class GraphSearch<S, A> extends TreeSearch<S, A> {
 	protected Node<S, A> removeFromFrontier() {
 		cleanUpFrontier(); // not really necessary because isFrontierEmpty should be called before...
 		Node<S, A> result = frontier.remove();
-		explored.add(result.getState());
+		explored.put(result.getState(), result);
 		updateMetrics(frontier.size());
 		return result;
 	}
@@ -113,7 +141,9 @@ public class GraphSearch<S, A> extends TreeSearch<S, A> {
 	 * of the frontier.
 	 */
 	private void cleanUpFrontier() {
-		while (!frontier.isEmpty() && explored.contains(frontier.element().getState()))
+		while (!frontier.isEmpty() && explored.containsKey(frontier.element().getState())) {
 			frontier.remove();
+			metrics.incrementInt(METRIC_NODES_RECTIFIED_DUPLICATED_IN_FRONTIER);
+		}
 	}
 }
