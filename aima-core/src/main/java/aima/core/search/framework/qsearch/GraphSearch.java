@@ -1,12 +1,9 @@
 package aima.core.search.framework.qsearch;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
 
-import aima.core.search.framework.Metrics;
 import aima.core.search.framework.Node;
 import aima.core.search.framework.NodeFactory;
 import aima.core.search.framework.problem.Problem;

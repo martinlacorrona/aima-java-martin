@@ -6,7 +6,7 @@ import java.util.Queue;
 import aima.core.search.framework.Node;
 import aima.core.search.framework.NodeFactory;
 import aima.core.search.framework.problem.Problem;
-import aima.core.util.Tasks;import jdk.nashorn.internal.ir.CallNode.EvalArgs;
+import aima.core.util.Tasks;
 
 /**
  * Artificial Intelligence A Modern Approach (3rd Edition): Figure 3.7, page 77.
@@ -77,7 +77,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 			Node<S, A> node = removeFromFrontier();
 			
 			//monitorizamos el valor de f(node)
-			System.out.println("f-value: " + evalFn.applyAsDouble(node));
+			//System.out.println("f-value: " + evalFn.applyAsDouble(node));
 			
 			// if the node contains a goal state then return the corresponding solution
 			if (!earlyGoalTest && problem.testSolution(node)) {
