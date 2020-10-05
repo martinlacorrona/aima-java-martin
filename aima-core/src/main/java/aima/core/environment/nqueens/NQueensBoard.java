@@ -144,6 +144,32 @@ public class NQueensBoard {
 		int y = l.getY();
 		return numberOfHorizontalAttacksOn(x, y) + numberOfVerticalAttacksOn(x, y) + numberOfDiagonalAttacksOn(x, y);
 	}
+	
+	public double probabilisticEstimation() {
+		return ((double) (getSize() - getNumberOfQueensOnBoard() / (1 - P())));
+		//No sabemos si finalmente se quedo con que version
+		//return ((double) (getSize() - getNumberOfQueensOnBoard() * (1 - P())));
+	}
+	
+	public double P() {
+		if(getNumberOfQueensOnBoard() == getSize()) {
+			 return 1.0;
+		} else {
+			return (double) getNumberOfNonAttackedPositions() / Math.pow((double)((getSize() - getNumberOfQueensOnBoard()) * getSize()), 1.5);
+		}
+	}
+	
+	public int getNumberOfNonAttackedPositions() {
+		int count = 0;
+		for(int col = 0; col < getSize(); col++) {
+			for (int row = 0; row < getSize(); row ++) {
+				XYLocation l = new XYLocation(col, row);
+				if(!isSquareUnderAttack(l))
+					count ++;
+			}
+		}
+		return count;
+	}
 
 	public boolean isSquareUnderAttack(XYLocation l) {
 		int x = l.getX();

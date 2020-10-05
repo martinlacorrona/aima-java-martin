@@ -1,25 +1,35 @@
 package aima.gui.demo.search;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
 import aima.core.environment.nqueens.NQueensBoard;
 import aima.core.environment.nqueens.NQueensBoard.Config;
 import aima.core.environment.nqueens.NQueensFunctions;
 import aima.core.environment.nqueens.NQueensGenAlgoUtil;
 import aima.core.environment.nqueens.QueenAction;
+import aima.core.search.agent.SearchAgent;
 import aima.core.search.framework.SearchForActions;
 import aima.core.search.framework.problem.Problem;
 import aima.core.search.framework.qsearch.GraphSearch;
 import aima.core.search.framework.qsearch.GraphSearch4e;
 import aima.core.search.framework.qsearch.TreeSearch;
 import aima.core.search.informed.AStarSearch;
-import aima.core.search.local.*;
+import aima.core.search.local.FitnessFunction;
+import aima.core.search.local.GeneticAlgorithm;
+import aima.core.search.local.HillClimbingSearch;
+import aima.core.search.local.Individual;
+import aima.core.search.local.Scheduler;
+import aima.core.search.local.SimulatedAnnealingSearch;
 import aima.core.search.uninformed.BreadthFirstSearch;
 import aima.core.search.uninformed.DepthFirstSearch;
 import aima.core.search.uninformed.DepthLimitedSearch;
 import aima.core.search.uninformed.IterativeDeepeningSearch;
-
-import java.math.BigDecimal;
-import java.util.*;
-import java.util.function.Predicate;
 
 /**
  * Demonsrates how different search algorithms perform on the NQueens problem.
@@ -36,16 +46,47 @@ public class NQueensDemo {
 	}
 
 	private static void startNQueensDemo() {
-		solveNQueensWithDepthFirstSearch();
-		solveNQueensWithBreadthFirstSearch();
-		solveNQueensWithAStarSearch();
-		solveNQueensWithAStarSearch4e();
-		solveNQueensWithRecursiveDLS();
-		solveNQueensWithIterativeDeepeningSearch();
-		solveNQueensWithSimulatedAnnealingSearch();
-		solveNQueensWithHillClimbingSearch();
-		solveNQueensWithGeneticAlgorithmSearch();
-		solveNQueensWithRandomWalk();
+//		solveNQueensWithDepthFirstSearch();
+//		solveNQueensWithBreadthFirstSearch();
+//		solveNQueensWithAStarSearch();
+//		solveNQueensWithAStarSearch4e();
+//		solveNQueensWithRecursiveDLS();
+//		solveNQueensWithIterativeDeepeningSearch();
+//		solveNQueensWithSimulatedAnnealingSearch();
+//		solveNQueensWithHillClimbingSearch();
+//		solveNQueensWithGeneticAlgorithmSearch();
+//		solveNQueensWithRandomWalk();
+		solveNQueensWithAStartSearch();
+	}
+	
+	
+	private static void solveNQueensWithAStartSearch() {
+		try {
+			System.out.println("\n--- NQueensWithAStartSearch ---");
+
+			//INCREMENTAL
+			Problem<NQueensBoard, QueenAction> problem = NQueensFunctions.createIncrementalFormulationProblem(boardSize);
+			
+			//COMPLETO
+//			Problem<NQueensBoard, QueenAction> problem = NQueensFunctions.createCompleteStateFormulationProblem
+//					(boardSize, Config.QUEENS_IN_FIRST_ROW); //primera fila
+//					(boardSize, Config.QUEEN_IN_EVERY_COL); //random (ejecutar 10 veces)
+//					(boardSize, Config.EMPTY); 		//no usar
+			
+			//ELECCION DE HEURISTICO
+			SearchForActions<NQueensBoard, QueenAction> search = new AStarSearch<>
+//				(new GraphSearch<>(), NQueensFunctions::getNumberOfAttackingPairs);
+				(new GraphSearch<>(), NQueensFunctions::getHeuristicProbabilisticEstimationOfSolution);
+//				(new GraphSearch<>(), NQueensFunctions::getNullHeuristicEstimation);
+			
+			//BUSCAR E IMPRIMIR
+			SearchAgent<Object, NQueensBoard, QueenAction> agent = new SearchAgent<>(problem, search);
+			printActions(agent.getActions());
+			printInstrumentation(agent.getInstrumentation());
+		} catch (Exception e) {
+			//EN CASO DE QUE FALLE (stack over flow) SALTA EXCEPCION
+			e.printStackTrace();
+		}
 	}
 
 	private static void solveNQueensWithDepthFirstSearch() {
@@ -199,5 +240,13 @@ public class NQueensDemo {
 		long stopTime = System.currentTimeMillis();
 		System.out.println("Solution found after generating " + i + " random configurations ("
 				+ (stopTime - startTime) + " ms).");
+	}
+	
+	private static void printInstrumentation(Properties properties) {
+		properties.keySet().stream().map(key -> key + "=" + properties.get(key)).forEach(System.out::println);
+	}
+
+	private static void printActions(List<QueenAction> actions) {
+		actions.forEach(System.out::println);
 	}
 }

@@ -1,5 +1,7 @@
 package aima.core.search.framework.qsearch;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.Queue;
 
@@ -67,7 +69,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 		clearMetrics();
 		// initialize the frontier using the initial state of the problem
 		Node<S, A> root = nodeFactory.createNode(problem.getInitialState());
-		//TODO: tiempo inicial
+		Instant initial = Instant.now();
 		addToFrontier(root);
 		if (earlyGoalTest && problem.testSolution(root))
 			return asOptional(root);
@@ -81,7 +83,7 @@ public class TreeSearch<S, A> extends QueueSearch<S, A> {
 			
 			// if the node contains a goal state then return the corresponding solution
 			if (!earlyGoalTest && problem.testSolution(node)) {
-				//TODO: tiempo final
+				metrics.set(METRIC_TIME_TAKEN, Duration.between(initial, Instant.now()).toMillis());
 				return asOptional(node);
 			}
 
