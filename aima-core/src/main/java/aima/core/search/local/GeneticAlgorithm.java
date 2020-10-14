@@ -47,8 +47,7 @@ import java.util.function.Predicate;
  * @author Mike Stampone
  * @author Ruediger Lunde
  * 
- * @param <A>
- *            the type of the alphabet used in the representation of the
+ * @param <A> the type of the alphabet used in the representation of the
  *            individuals in the population (this is to provide flexibility in
  *            terms of how a problem can be encoded).
  */
@@ -62,7 +61,7 @@ public class GeneticAlgorithm<A> {
 	protected int individualLength;
 	protected List<A> finiteAlphabet;
 	protected double mutationProbability;
-	
+
 	protected Random random;
 	private List<ProgressTracker<A>> progressTrackers = new ArrayList<>();
 
@@ -84,33 +83,31 @@ public class GeneticAlgorithm<A> {
 	public void addProgressTracer(ProgressTracker<A> pTracker) {
 		progressTrackers.add(pTracker);
 	}
-	
+
 	/**
 	 * Starts the genetic algorithm and stops after a specified number of
 	 * iterations.
 	 */
-	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation,
-			FitnessFunction<A> fitnessFn, final int maxIterations) {
+	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation, FitnessFunction<A> fitnessFn,
+			final int maxIterations) {
 		Predicate<Individual<A>> goalTest = state -> getIterations() >= maxIterations;
 		return geneticAlgorithm(initPopulation, fitnessFn, goalTest, 0L);
 	}
-	
+
 	/**
 	 * Template method controlling search. It returns the best individual in the
-	 * specified population, according to the specified FITNESS-FN and goal
-	 * test.
+	 * specified population, according to the specified FITNESS-FN and goal test.
 	 * 
-	 * @param initPopulation
-	 *            a set of individuals
-	 * @param fitnessFn
-	 *            a function that measures the fitness of an individual
-	 * @param goalTest
-	 *            test determines whether a given individual is fit enough to
-	 *            return. Can be used in subclasses to implement additional
-	 *            termination criteria, e.g. maximum number of iterations.
-	 * @param maxTimeMilliseconds
-	 *            the maximum time in milliseconds that the algorithm is to run
-	 *            for (approximate). Only used if > 0L.
+	 * @param initPopulation      a set of individuals
+	 * @param fitnessFn           a function that measures the fitness of an
+	 *                            individual
+	 * @param goalTest            test determines whether a given individual is fit
+	 *                            enough to return. Can be used in subclasses to
+	 *                            implement additional termination criteria, e.g.
+	 *                            maximum number of iterations.
+	 * @param maxTimeMilliseconds the maximum time in milliseconds that the
+	 *                            algorithm is to run for (approximate). Only used
+	 *                            if > 0L.
 	 * @return the best individual in the specified population, according to the
 	 *         specified FITNESS-FN and goal test.
 	 */
@@ -118,7 +115,7 @@ public class GeneticAlgorithm<A> {
 	// inputs: population, a set of individuals
 	// FITNESS-FN, a function that measures the fitness of an individual
 	public Individual<A> geneticAlgorithm(Collection<Individual<A>> initPopulation, FitnessFunction<A> fitnessFn,
-										  Predicate<Individual<A>> goalTest, long maxTimeMilliseconds) {
+			Predicate<Individual<A>> goalTest, long maxTimeMilliseconds) {
 		Individual<A> bestIndividual = null;
 
 		// Create a local copy of the population to work with
@@ -131,11 +128,18 @@ public class GeneticAlgorithm<A> {
 
 		// repeat
 		int itCount = 0;
+
+		bestIndividual = retrieveBestIndividual(population, fitnessFn);
+		System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
+				+ " Best fitness: " + fitnessFn.apply(bestIndividual));
 		do {
-			population = nextGeneration(population, fitnessFn);
+			population = nextGeneration(population, fitnessFn, bestIndividual);
 			bestIndividual = retrieveBestIndividual(population, fitnessFn);
 
 			updateMetrics(population, ++itCount, System.currentTimeMillis() - startTime);
+
+			System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
+					+ " Best fitness: " + fitnessFn.apply(bestIndividual));
 
 			// until some individual is fit enough, or enough time has elapsed
 			if (maxTimeMilliseconds > 0L && (System.currentTimeMillis() - startTime) > maxTimeMilliseconds)
@@ -147,6 +151,15 @@ public class GeneticAlgorithm<A> {
 		notifyProgressTrackers(itCount, population);
 		// return the best individual in population, according to FITNESS-FN
 		return bestIndividual;
+	}
+
+	public double averageFitness(Collection<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+		double accfValue = 0.0;
+		for (Individual<A> individual : population) {
+			accfValue += fitnessFn.apply(individual);
+		}
+		return accfValue / population.size();
+
 	}
 
 	public Individual<A> retrieveBestIndividual(Collection<Individual<A>> population, FitnessFunction<A> fitnessFn) {
@@ -209,10 +222,8 @@ public class GeneticAlgorithm<A> {
 	/**
 	 * Updates statistic data collected during search.
 	 * 
-	 * @param itCount
-	 *            the number of iterations.
-	 * @param time
-	 *            the time in milliseconds that the genetic algorithm took.
+	 * @param itCount the number of iterations.
+	 * @param time    the time in milliseconds that the genetic algorithm took.
 	 */
 	protected void updateMetrics(Collection<Individual<A>> population, int itCount, long time) {
 		metrics.set(POPULATION_SIZE, population.size());
@@ -227,29 +238,101 @@ public class GeneticAlgorithm<A> {
 	// behavior.
 	//
 	/**
-	 * Primitive operation which is responsible for creating the next
-	 * generation. Override to get progress information!
+	 * Primitive operation which is responsible for creating the next generation.
+	 * Override to get progress information!
 	 */
-	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+//	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn) {
+//		// new_population <- empty set
+//		List<Individual<A>> newPopulation = new ArrayList<>(population.size());
+//		// for i = 1 to SIZE(population) do
+//		for (int i = 0; i < population.size(); i++) {
+//			// x <- RANDOM-SELECTION(population, FITNESS-FN)
+//			Individual<A> x = randomSelection(population, fitnessFn);
+//			// y <- RANDOM-SELECTION(population, FITNESS-FN)
+//			Individual<A> y = randomSelection(population, fitnessFn);
+//			// child <- REPRODUCE(x, y)
+//			Individual<A> child = reproduce(x, y);
+//			// if (small random probability) then child <- MUTATE(child)
+//			if (random.nextDouble() <= mutationProbability) {
+//				child = mutate(child);
+//			}
+//			// add child to new_population
+//			newPopulation.add(child);
+//		}
+//		//EJERCICIO 5: elitismo
+//		notifyProgressTrackers(getIterations(), population);
+//		return newPopulation;
+//	}
+
+	protected List<Individual<A>> nextGeneration(List<Individual<A>> population, FitnessFunction<A> fitnessFn,
+			Individual<A> bestBefore) {
 		// new_population <- empty set
 		List<Individual<A>> newPopulation = new ArrayList<>(population.size());
+
 		// for i = 1 to SIZE(population) do
-		for (int i = 0; i < population.size(); i++) {
+		for (int i = 0; i < population.size() - 1; i++) {
 			// x <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> x = randomSelection(population, fitnessFn);
+
 			// y <- RANDOM-SELECTION(population, FITNESS-FN)
 			Individual<A> y = randomSelection(population, fitnessFn);
+
 			// child <- REPRODUCE(x, y)
-			Individual<A> child = reproduce(x, y);
+			Individual<A> child = reproduce2(x, y);
+
 			// if (small random probability) then child <- MUTATE(child)
 			if (random.nextDouble() <= mutationProbability) {
-				child = mutate(child);
+				child = mutate2(child);
 			}
+
 			// add child to new_population
 			newPopulation.add(child);
 		}
+		//EJERCICIO 5: elitimos
+		newPopulation.add(bestBefore);
 		notifyProgressTrackers(getIterations(), population);
+
 		return newPopulation;
+	}
+
+	protected Individual<A> reproduce2(Individual<A> firstParent, Individual<A> secondParent) {
+		int individualLength = firstParent.length();
+
+		int p1 = randomOffset(individualLength);
+		int p2 = randomOffset(individualLength);
+		List<A> xArray = firstParent.getRepresentation();
+		List<A> yArray = secondParent.getRepresentation();
+		List<A> offArray = new ArrayList<A>(xArray);
+
+		int k = p2;
+		for (int i = 0; i < individualLength; i++) {
+			int j = p1;
+			while (j < p2 + (p2 <= p1 ? individualLength : 0) && yArray.get(i) != xArray.get(j % individualLength)) {
+				j++;
+			}
+			if (j == p2 + (p2 <= p1 ? individualLength : 0)) {
+				offArray.set(k % individualLength, yArray.get(i));
+				k++;
+			}
+		}
+
+		return new Individual<A>(offArray);
+	}
+	
+	//Ejercicio 4
+	public Individual<A> mutate2(Individual<A> cromosome) {
+		//Random swapping of two positions
+		int individualLenght = cromosome.length();
+		
+		int p = randomOffset(individualLenght - 1);
+		int c = randomOffset(individualLenght - 1);
+		ArrayList<A> mutatedRepresentation = new ArrayList<A>(cromosome.getRepresentation());
+		
+		A temp = mutatedRepresentation.get(p);
+		mutatedRepresentation.set(c, mutatedRepresentation.get(c));
+		mutatedRepresentation.set(c, temp);
+		
+		return (new Individual<A>(mutatedRepresentation));
 	}
 
 	// RANDOM-SELECTION(population, FITNESS-FN)
@@ -258,11 +341,20 @@ public class GeneticAlgorithm<A> {
 		// (just to avoid problems with rounding errors)
 		Individual<A> selected = population.get(population.size() - 1);
 
-		// Determine all of the fitness values
+		//EJEERCICO 6: scalling
+		double minFitness = Double.MAX_VALUE;
 		double[] fValues = new double[population.size()];
 		for (int i = 0; i < population.size(); i++) {
 			fValues[i] = fitnessFn.apply(population.get(i));
+			if(fValues[i] < minFitness) minFitness = fValues[i]; //buscamos el fitness peor
 		}
+		
+		for(int i = 0; i < population.size(); i++) {
+			fValues[i] = minFitness;
+			fValues[i] = Math.pow(fValues[i], 2);
+		}
+		
+		
 		// Normalize the fitness values
 		fValues = Util.normalize(fValues);
 		double prob = random.nextDouble();
@@ -305,7 +397,7 @@ public class GeneticAlgorithm<A> {
 		mutatedRepresentation.set(mutateOffset, finiteAlphabet.get(alphaOffset));
 
 		return new Individual<A>(mutatedRepresentation);
-}
+	}
 
 	protected int randomOffset(int length) {
 		return random.nextInt(length);
@@ -326,12 +418,12 @@ public class GeneticAlgorithm<A> {
 			}
 		}
 	}
-	
+
 	private void notifyProgressTrackers(int itCount, Collection<Individual<A>> generation) {
 		for (ProgressTracker<A> tracer : progressTrackers)
 			tracer.trackProgress(getIterations(), generation);
 	}
-	
+
 	/**
 	 * Interface for progress tracers.
 	 * 
