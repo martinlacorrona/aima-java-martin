@@ -39,7 +39,7 @@ import aima.core.search.uninformed.IterativeDeepeningSearch;
 
 public class NQueensDemo {
 
-	private static final int boardSize = 8;
+	private static final int boardSize = 10;
 
 	public static void main(String[] args) {
 		startNQueensDemo();

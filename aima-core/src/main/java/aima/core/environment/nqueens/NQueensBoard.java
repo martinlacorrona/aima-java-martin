@@ -146,9 +146,9 @@ public class NQueensBoard {
 	}
 	
 	public double probabilisticEstimation() {
-		return ((double) (getSize() - getNumberOfQueensOnBoard() / (1 - P())));
-		//No sabemos si finalmente se quedo con que version
-		//return ((double) (getSize() - getNumberOfQueensOnBoard() * (1 - P())));
+		//return ((double) (getSize() - getNumberOfQueensOnBoard() / (1 - P())));
+		//FINALMENTE SE QUEDO CON LA VERSIÓN DE MULTIPLICACIÓN
+		return ((double) (getSize() - getNumberOfQueensOnBoard() * (1 - P())));
 	}
 	
 	public double P() {
