@@ -130,16 +130,16 @@ public class GeneticAlgorithm<A> {
 		int itCount = 0;
 
 		bestIndividual = retrieveBestIndividual(population, fitnessFn);
-		System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
-				+ " Best fitness: " + fitnessFn.apply(bestIndividual));
+		//System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
+		//		+ " Best fitness: " + fitnessFn.apply(bestIndividual));
 		do {
 			population = nextGeneration(population, fitnessFn, bestIndividual);
 			bestIndividual = retrieveBestIndividual(population, fitnessFn);
 
 			updateMetrics(population, ++itCount, System.currentTimeMillis() - startTime);
 
-			System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
-					+ " Best fitness: " + fitnessFn.apply(bestIndividual));
+			//System.out.println("\nGEN " + itCount + " AvgFitness: " + averageFitness(population, fitnessFn)
+			//		+ " Best fitness: " + fitnessFn.apply(bestIndividual));
 
 			// until some individual is fit enough, or enough time has elapsed
 			if (maxTimeMilliseconds > 0L && (System.currentTimeMillis() - startTime) > maxTimeMilliseconds)
